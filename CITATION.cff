@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this code or these results, please cite the paper below (preferred) and, if you need a software record, this repository."
+title: "Activation functions for necrotic-core segmentation in glioblastoma (BraTS 2020) - code and results"
+abstract: >-
+  Training, evaluation and analysis code, per-patient metrics, training logs and
+  figures for a controlled ablation of twelve activation functions in a residual
+  3D U-Net on the BraTS 2020 cohort, with three-seed, five-fold cross-validation
+  and same-GPU timing follow-ups.
+type: software
+license: MIT
+repository-code: "https://github.com/maaa82/brats2020-activation-functions"
+authors:
+  - family-names: Saleh
+    given-names: "Mushtaq Mahyoob"
+  - family-names: Hussein
+    given-names: "Eltahir Mohamed"
+  - family-names: Salih
+    given-names: "Musab Elkheir"
+  - family-names: Ahmed
+    given-names: "Mohamed A. A."
+    email: maaa82@sustech.edu
+    affiliation: "Sudan University of Science and Technology"
+preferred-citation:
+  type: article
+  title: "Enhancing 3D MRI-Based Necrotic Core Segmentation in Glioblastoma Using Activation Functions in Deep Learning"
+  authors:
+    - family-names: Saleh
+      given-names: "Mushtaq Mahyoob"
+    - family-names: Hussein
+      given-names: "Eltahir Mohamed"
+    - family-names: Salih
+      given-names: "Musab Elkheir"
+    - family-names: Ahmed
+      given-names: "Mohamed A. A."
+  journal: Informatics
+  year: 2026
+  volume: 13
+  issue: 7
+  start: 118
+  doi: 10.3390/informatics13070118
+  url: "https://doi.org/10.3390/informatics13070118"

@@ -1,0 +1,9 @@
+# PyTorch is installed separately (see environment.md) so that the CUDA build matches the driver.
+numpy
+pandas
+scipy
+nibabel
+scikit-learn
+matplotlib
+seaborn
+tqdm

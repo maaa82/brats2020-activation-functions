@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Environments
+.venv/
+venv/
+
+# Data and weights are deliberately not tracked here
+*.nii
+*.nii.gz
+*.npy
+*.pth
+*.zip
