@@ -2,18 +2,18 @@
 
 # Define the full 12-activation study
 experiments=(
-    # Group 1: Baselines
+    # Piecewise-linear / classical
     "relu Exp1_ReLU"
     "leaky_relu Exp2_Leaky"
     "prelu Exp3_PReLU"
     "elu Exp4_ELU"
 
-    # Group 2: Modern
+    # Smooth, self-gated
     "gelu Exp5_GELU"
     "swish Exp6_Swish"
     "mish Exp7_Mish"
 
-    # Group 3: Advanced/Novel
+    # Recent smooth variants
     "elish Exp8_ELiSH"
     "hard_elish Exp9_HardELiSH"
     "logish Exp10_Logish"
@@ -21,7 +21,7 @@ experiments=(
     "tanhexp Exp12_TanhExp"
 )
 
-echo "🚀 LAUNCHING COMPREHENSIVE 12-ACTIVATION STUDY..."
+echo "Launching the 12-activation study..."
 echo "=================================================="
 
 for exp in "${experiments[@]}"; do
@@ -29,13 +29,13 @@ for exp in "${experiments[@]}"; do
     ACT=$1
     NAME=$2
 
-    echo "▶️  STARTING: $NAME (Act: $ACT)"
+    echo "Starting: $NAME (activation: $ACT)"
 
-    # Run Script (Auto-resumes if interrupted)
+    # Each run resumes automatically from latest.pth if interrupted
     python train.py --act $ACT --name $NAME --epochs 100
 
-    echo "✅ FINISHED: $NAME"
+    echo "Finished: $NAME"
     echo "--------------------------------------"
 done
 
-echo "🎉 ALL EXPERIMENTS COMPLETE!"
+echo "All experiments complete."

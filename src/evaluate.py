@@ -2,10 +2,11 @@
 
 The model, activation and dataset definitions, the metric engine
 (`compute_metrics`), the evaluation loop (`run_evaluation`) and the statistics
-pass (`summarise_with_wilcoxon`) are taken verbatim from the Colab notebook
-export archived in colab/BraTS_evaluate_colab_export.py, which also contains
-the figure-generation cells.  The only changes here are that the Google Drive
-paths are collected at the top of the file and nothing runs on import.
+pass (`summarise_with_wilcoxon`) are taken from the Colab notebook export
+archived in colab/BraTS_evaluate_colab_export.py, which also contains the
+figure-generation cells.  The computation is unchanged; the Google Drive paths
+are collected at the top of the file, console messages were tidied, and nothing
+runs on import.
 
 Outputs (main study):
   raw_predictions.csv               one row per (activation, patient): Dice, HD95,

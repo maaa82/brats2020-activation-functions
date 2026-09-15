@@ -1,8 +1,9 @@
 """Training script for the 12-activation study (ImprovedUNet3D, CE + soft Dice, AdamW, cosine schedule, 100 epochs, seed 42).
 
-Extracted verbatim from the Colab notebook export archived in colab/
-BraTS2020_Training_colab_export.py. Paths point at the Google Drive layout used
-for the reported runs; override DATA_DIR / PROCESSED_PATH for a local setup.
+Extracted from the Colab notebook export archived in colab/
+BraTS2020_Training_colab_export.py (code unchanged; comments tidied). Paths point
+at the Google Drive layout used for the reported runs; set DATA_DIR and the
+SAVE_DIR root for a local setup.
 """
 
 import os
@@ -33,7 +34,7 @@ def seed_everything(seed=42):
     torch.backends.cudnn.benchmark = False
 
 # ==========================================
-# 2. ACTIVATIONS (12 Functions)
+# 2. ACTIVATIONS (12 functions)
 # ==========================================
 class Mish(nn.Module):
     def forward(self, x): return x * torch.tanh(F.softplus(x))
@@ -55,16 +56,16 @@ class TanhExp(nn.Module):
 
 def get_activation(name):
     name = name.lower()
-    # Baselines
+    # Piecewise-linear / classical
     if name == 'relu': return nn.ReLU(inplace=True)
     if name == 'leaky_relu': return nn.LeakyReLU(0.01, inplace=True)
     if name == 'prelu': return nn.PReLU()
     if name == 'elu': return nn.ELU(inplace=True)
-    # Modern
+    # Smooth, self-gated
     if name == 'gelu': return nn.GELU()
     if name == 'swish': return nn.SiLU(inplace=True)
     if name == 'mish': return Mish()
-    # Novel / Advanced
+    # Recent smooth variants
     if name == 'elish': return ELiSH()
     if name == 'hard_elish': return HardELiSH()
     if name == 'logish': return Logish()
@@ -91,7 +92,7 @@ class BraTSDataset(Dataset):
             mask = torch.from_numpy(mask).permute(2, 0, 1)  # (D, H, W)
             return img, mask
         except Exception:
-            # Robust fallback for corrupted files
+            # Fallback for an unreadable file: return an all-zero volume
             return torch.zeros((4, 128, 128, 128)), torch.zeros((128, 128, 128), dtype=torch.long)
 
 # ==========================================
@@ -154,48 +155,48 @@ if __name__ == "__main__":
     os.makedirs(SAVE_DIR, exist_ok=True)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print(f"🚀 Started: {args.name} | Act: {args.act}")
+    print(f"Started: {args.name} | activation: {args.act}")
 
-    # Init Components
+    # Model, optimiser, loss, scheduler
     model = ImprovedUNet3D(4, 4, args.act).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=3e-4)
     scaler = torch.amp.GradScaler('cuda')
     ce_loss = nn.CrossEntropyLoss()
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs)
 
-    # --- RESUME LOGIC (With Fixes) ---
+    # --- Resume from latest.pth if present ---
     ckpt_path = os.path.join(SAVE_DIR, "latest.pth")
     start_epoch = 0; history = []
 
     if os.path.exists(ckpt_path):
-        print("🔄 Resuming from checkpoint...")
-        # FIX 1: weights_only=False for PyTorch 2.6+ compatibility
+        print("Resuming from checkpoint...")
+        # weights_only=False: the checkpoint holds optimiser and scheduler state (PyTorch >= 2.6)
         ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
         model.load_state_dict(ckpt['model'])
         optimizer.load_state_dict(ckpt['opt'])
         start_epoch = ckpt['epoch']
         history = ckpt.get('history', [])
 
-        # FIX 2: Restore Scheduler to prevent Loss Spike
+        # Restore the scheduler state so the learning rate continues where it left off
         if 'scheduler' in ckpt:
             scheduler.load_state_dict(ckpt['scheduler'])
         else:
-            # Fallback for old checkpoints: fast-forward scheduler
-            print("   (Re-aligning scheduler...)")
+            # Checkpoint without scheduler state: fast-forward the scheduler
+            print("   (re-aligning scheduler)")
             for _ in range(start_epoch): scheduler.step()
 
-    # Data Loaders
+    # Data loaders
     train_dl = DataLoader(BraTSDataset(f"{DATA_DIR}/train/images", f"{DATA_DIR}/train/masks"),
                           batch_size=2, shuffle=True, num_workers=2, pin_memory=True)
     val_dl = DataLoader(BraTSDataset(f"{DATA_DIR}/val/images", f"{DATA_DIR}/val/masks"),
                         batch_size=2, shuffle=False, num_workers=2, pin_memory=True)
 
-    # --- MAIN LOOP ---
+    # --- Main loop ---
     for epoch in range(start_epoch, args.epochs):
         torch.cuda.reset_peak_memory_stats()
         epoch_start = time.time()
 
-        # 1. Train
+        # 1. Train one epoch
         model.train()
         t_loss = 0
         for x, y in tqdm(train_dl, desc=f"Ep {epoch+1} Train", leave=False):
@@ -203,7 +204,7 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             with torch.amp.autocast('cuda'):
                 pred = model(x)
-                # Combined Loss (CE + Dice)
+                # Combined loss: unweighted cross-entropy + soft Dice
                 p_soft = F.softmax(pred, 1)
                 y_oh = F.one_hot(y, 4).permute(0,4,1,2,3).float()
                 inter = (p_soft * y_oh).sum((2,3,4))
@@ -229,7 +230,7 @@ if __name__ == "__main__":
                 x, y = x.to(device), y.to(device)
                 with torch.amp.autocast('cuda'):
                     pred = model(x)
-                    # Val Loss
+                    # Validation loss
                     p_soft = F.softmax(pred, 1)
                     y_oh = F.one_hot(y, 4).permute(0,4,1,2,3).float()
                     inter = (p_soft * y_oh).sum((2,3,4))
@@ -238,7 +239,7 @@ if __name__ == "__main__":
                     loss = ce_loss(pred, y) + dice_loss
                 v_loss += loss.item()
 
-                # Val Metrics
+                # Per-class validation metrics
                 p_cls = pred.argmax(1)
                 for c in range(4):
                     p = (p_cls==c).float(); t = (y==c).float()
@@ -250,7 +251,7 @@ if __name__ == "__main__":
                     precisions[c] += ((tp + 1e-5)/(tp + fp + 1e-5)).item()
                     sensitivities[c] += ((tp + 1e-5)/(tp + fn + 1e-5)).item()
 
-        # 3. Stats
+        # 3. Epoch statistics
         val_loss_avg = v_loss / len(val_dl)
         dices /= len(val_dl)
         precisions /= len(val_dl)
@@ -265,10 +266,10 @@ if __name__ == "__main__":
 
         print(f"Ep {epoch+1}: T_Loss={train_loss_avg:.4f} | V_Loss={val_loss_avg:.4f} | Dice={mean_dice:.4f} | Mem={max_mem:.2f}GB")
 
-        # 4. Save
+        # 4. Save checkpoint, best model and log
         history.append([epoch+1, train_loss_avg, val_loss_avg, mean_dice, *dices, mean_prec, *precisions, mean_sens, *sensitivities, duration, max_mem])
 
-        # Save Checkpoint (Include Scheduler!)
+        # Resume checkpoint (includes scheduler state)
         torch.save({
             'epoch': epoch+1,
             'model': model.state_dict(),
@@ -277,11 +278,11 @@ if __name__ == "__main__":
             'history': history
         }, ckpt_path)
 
-        # Save Best Model
+        # Best model = highest mean Dice over the three tumour classes
         if mean_dice >= max([h[3] for h in history]):
             torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_model.pth"))
 
-        # Log CSV
+        # Per-epoch log
         cols = ['epoch','train_loss','val_loss','mean_dice',
                 'dice_bg','dice_necro','dice_edema','dice_enh',
                 'mean_prec','prec_bg','prec_necro','prec_edema','prec_enh',
@@ -291,4 +292,4 @@ if __name__ == "__main__":
 
         scheduler.step()
 
-    print("✅ Experiment Complete.")
+    print("Experiment complete.")
