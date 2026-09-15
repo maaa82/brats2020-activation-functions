@@ -95,13 +95,14 @@ results/
 figures/                    paper figures as rendered from these results
 ```
 
-`src/preprocess.py`, `src/train.py` and `src/run_all.sh` are extracted
-**verbatim** from the Colab export in `colab/BraTS2020_Training_colab_export.py`
-(the training script and the run sequencer are `%%writefile` cells there).
-`src/evaluate.py` collects the model definitions, the metric engine and the
-statistics pass from `colab/BraTS_evaluate_colab_export.py`; the figure cells
-of that export were left in the export only. The code is authoritative for what
-the archived results describe.
+`src/preprocess.py`, `src/train.py` and `src/run_all.sh` are extracted from the
+Colab export in `colab/BraTS2020_Training_colab_export.py` (the training script
+and the run sequencer are `%%writefile` cells there); `src/evaluate.py` collects
+the model definitions, the metric engine and the statistics pass from
+`colab/BraTS_evaluate_colab_export.py`, leaving the figure cells in the export.
+The executable code is unchanged — only comments and console messages were
+tidied — and the unmodified exports are kept in `colab/` for provenance. The
+code is authoritative for what the archived results describe.
 
 ---
 
