@@ -9,6 +9,9 @@ abstract: >-
 type: software
 license: MIT
 repository-code: "https://github.com/maaa82/brats2020-activation-functions"
+doi: 10.5281/zenodo.22803086
+version: v1.0
+date-released: "2026-09-16"
 authors:
   - family-names: Saleh
     given-names: "Mushtaq Mahyoob"

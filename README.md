@@ -1,5 +1,7 @@
 # Activation functions for necrotic-core segmentation in glioblastoma (BraTS 2020)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22803086.svg)](https://doi.org/10.5281/zenodo.22803086)
+
 Code, per-patient results and figures for the paper
 
 > Saleh, M.M.; Hussein, E.M.; Salih, M.E.; Ahmed, M.A.A.
@@ -281,6 +283,11 @@ Checkpoints are **available on request from the authors**.
 
 Please cite the paper (§ top). `CITATION.cff` carries the paper as the
 preferred citation and this repository as the software record.
+
+The code and results in this repository are archived on Zenodo:
+**[10.5281/zenodo.22803086](https://doi.org/10.5281/zenodo.22803086)** — this
+DOI always resolves to the latest version. To cite the exact snapshot released
+as `v1.0`, use [10.5281/zenodo.22803087](https://doi.org/10.5281/zenodo.22803087).
 
 ## 10. Contact
 
