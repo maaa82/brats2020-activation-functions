@@ -284,4 +284,5 @@ preferred citation and this repository as the software record.
 
 ## 10. Contact
 
-Mohamed A. A. Ahmed — <maaa82@sustech.edu>
+- Mushtaq Mahyoob Saleh (corresponding author) — <mushtaqkassem20@gmail.com>
+- Mohamed A. A. Ahmed (repository maintainer) — <maaa82@sustech.edu>
